@@ -9,14 +9,16 @@ if(cmd_rcvd.substring(0,1) == "_")
 	{
 		Serial.println("_sndn Recibido");
 		valor=cmd_rcvd.substring(cmd_rcvd.indexOf(',')+1,cmd_rcvd.lastIndexOf(']')).toInt();
+    Duty_us=8300-(83*valor);
 
-		if(valor==1)
-			digitalWrite(5, HIGH);
+		//if(valor==1)
+		//	digitalWrite(5, HIGH);
 		
-	if (valor==0)
-		digitalWrite(5, LOW);
+	//if (valor==0)
+	//	digitalWrite(5, LOW);
 
   Serial.println(valor);
+  Serial.println(Duty_us);
 	cmdOk=1;
 	}
 	
