@@ -97,7 +97,7 @@ void loop(void)
 			}
 		}
 
-	if ( radio.available() )  // Si hay datos disponibles
+	if ( radio.available() )  // Si hay datos disponibles.
 	{
 		cmd_rcvd="";
 		bool done = false;
