@@ -29,7 +29,7 @@ void setup(void)
 {
   pinMode(5, OUTPUT); 
   pinMode(3, INPUT);
-    pinMode(4, INPUT);
+  pinMode(4, INPUT);
   pinMode(13, OUTPUT);
   
 
@@ -45,8 +45,8 @@ void setup(void)
 	disp.wd(0,"dflt7");
 	disp.wn(0,"noname");
 	
-	if(selectPipe((disp.Dispositivo[1].direccion))>selectPipe("ZZZZZ"))
-		disp.wd(1,"dflt7");
+	//if(selectPipe((disp.Dispositivo[1].direccion))>selectPipe("ZZZZZ"))
+	//	disp.wd(1,"dflt7");
 	
 	pipe[0]=selectPipe(String(disp.Dispositivo[1].direccion));
 	pipe[1]=selectPipe(String(disp.Dispositivo[1].direccion))+1;
@@ -86,20 +86,18 @@ void loop(void)
 
 
 		radio.stopListening();	// Dejamos d escuchar para poder hablar
-//		radio.openWritingPipe(pipe[1]);
+
 		delay(100);	// Para dar tiempo al emisor
 		
 		RadioCmds();
 		
-
-
   	bool ok = false;
 		int TXattempts=0;
 		while(!ok && TXattempts<5)
 		{
-			delay(100);
-		  ok = RadioWrite(cmd_rcvd);
+			ok = RadioWrite(cmd_rcvd);
 			++TXattempts;
+			delay(100);
 		}
 		
 		Serial.print("Intentos: ");
