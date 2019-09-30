@@ -17,7 +17,7 @@ unsigned long t0, t1, t, Duty_us=5000;
 RF24 radio(9,10);
 uint64_t pipe[2] = {0x63661E616CLL,0x63616E616DLL };
 
-SpecialFn blinkOn, blinkOff;
+//SpecialFn blinkOn, blinkOff;
 BT_Network disp;
 
 #include "RadioComm_S.h" 
@@ -67,35 +67,11 @@ void setup(void)
 	radio.openReadingPipe(1,pipe[0]);
 	radio.openWritingPipe(pipe[1]);
   
-	blinkOn.TON.pre=100;							//Inicilizando Timers
-	blinkOff.TON.pre=100;
-	blinkOn.TON.en=0;
-	blinkOff.TON.en=0;
-
-    attachInterrupt(digitalPinToInterrupt(3), Dimmer, RISING);
+	attachInterrupt(digitalPinToInterrupt(3), Dimmer, RISING);
 }
  
 void loop(void)
 	{
-	blinkOff.init();
-	blinkOn.init();	
-	blinkOn.TON.en=1;
-
-    
-
-	if(blinkOn.TON.tt)
-		digitalWrite(13, HIGH);
-
-	if(blinkOn.TON.dn)
-		{
-		digitalWrite(13, LOW);
-		blinkOff.TON.en=1;
-		if (blinkOff.TON.dn)
-			{
-			blinkOn.TON.en=0;
-			blinkOff.TON.en=0;
-			}
-		}
 
 	if ( radio.available() )  // Si hay datos disponibles.
 	{
@@ -144,6 +120,9 @@ void loop(void)
 
 		cmd_rcvd="";
 		radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
+		
+		
+		
 	}
 
 	if (reconfig==1)
@@ -174,9 +153,11 @@ if(!(valor==1 || valor==0)){
 	
   }
 
+
 void Dimmer() {
   crossZero = true;
   digitalWrite(5, LOW);
-}
+  }
+  
 
   
