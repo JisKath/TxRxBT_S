@@ -10,14 +10,16 @@
 #include <SPI.h>
 
 String theMessage="", cmd_rcvd="";
-int msg[1], cmd_disp=0, valor=1, reconfig=0;
+int msg[1], cmd_disp=0, valor=1, reconfig=0, TXattempts=0;
 
 unsigned long t0, t1, t, Duty_us=5000;
+
+bool ok = false, done=false;
 
 RF24 radio(9,10);
 uint64_t pipe[2] = {0x63661E616CLL,0x63616E616DLL };
 
-//SpecialFn blinkOn, blinkOff;
+SpecialFn blinkOn, blinkOff;
 BT_Network disp;
 
 #include "RadioComm_S.h" 
@@ -46,7 +48,7 @@ void setup(void)
 	disp.wn(0,"noname");
 	
 	//if(selectPipe((disp.Dispositivo[1].direccion))>selectPipe("ZZZZZ"))
-	//	disp.wd(1,"dflt7");
+	//	disp.wd(1,"dflt0");
 	
 	pipe[0]=selectPipe(String(disp.Dispositivo[1].direccion));
 	pipe[1]=selectPipe(String(disp.Dispositivo[1].direccion))+1;
@@ -66,17 +68,63 @@ void setup(void)
 	radio.startListening();
 	radio.openReadingPipe(1,pipe[0]);
 	radio.openWritingPipe(pipe[1]);
+	
+	blinkOn.TON.pre=20;							//Inicilizando Timers
+	blinkOff.TON.pre=100;
+	blinkOn.TON.en=0;
+	blinkOff.TON.en=0;
   
 	attachInterrupt(digitalPinToInterrupt(3), Dimmer, RISING);
 }
  
 void loop(void)
 	{
+	
+	blinkOff.init();
+	blinkOn.init();	
+	blinkOn.TON.en=0;
+	
+	if(blinkOn.TON.tt)
+	{};
 
-	if ( radio.available() )  // Si hay datos disponibles.
+	//if(blinkOn.TON.dn && done)
+  if(done && !ok)
+		{
+
+			ok = RadioWrite(cmd_rcvd);
+      //delay(5);
+			++TXattempts;
+		
+			if (ok)
+			{
+				Serial.print("Intentos: ");
+				Serial.println(TXattempts);
+				Serial.println("ok...;"); 
+				Serial.print("Dato Enviado: ");
+				Serial.println(cmd_rcvd);
+				cmd_rcvd="";
+				radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
+				blinkOn.TON.en=0;
+				done=false;
+			}
+	   
+			if(TXattempts>5){
+				Serial.println("Falla al transmitir;");	
+				blinkOn.TON.en=0;
+				done=false;
+              radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
+
+			}
+			
+	//		bool ok = RadioWrite(cmd_rcvd);
+
+
+
+		}
+
+	if ( radio.available() && !done )  // Si hay datos disponibles.
 	{
 		cmd_rcvd="";
-		bool done = false;
 
 		cmd_rcvd=RadioRead();
 
@@ -91,35 +139,9 @@ void loop(void)
 		
 		RadioCmds();
 		
-  	bool ok = false;
-		int TXattempts=0;
-		while(!ok && TXattempts<5)
-		{
-			ok = RadioWrite(cmd_rcvd);
-			++TXattempts;
-			delay(100);
-		}
-		
-		Serial.print("Intentos: ");
-		Serial.println(TXattempts);
-	
-		if (ok)
-    {
-      Serial.println("ok...;"); 
-      Serial.print("Dato Enviado: ");
-      Serial.println(cmd_rcvd);
-    }
-   
-		else
-			Serial.println("Falla al transmitir;");		
-		
-		
-//		bool ok = RadioWrite(cmd_rcvd);
-
-		cmd_rcvd="";
-		radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
-		
-		
+		ok = false;
+		TXattempts=0;
+		done = true;
 		
 	}
 
@@ -134,7 +156,7 @@ void loop(void)
 
 
 if(!(valor==1 || valor==0)){
-  if(crossZero){
+  if(crossZero && !done){
     crossZero=false;
     digitalWrite(5, LOW);
     delayMicroseconds(Duty_us);
