@@ -7,7 +7,7 @@ if(cmd_rcvd.substring(0,1) == "_")
 
 	if(cmd_rcvd.substring(0,6) == "_sndn[") //sndn[0,1]
 	{
-		Serial.println("_sndn Recibido");
+		Serial.println("_sndn ");
 		valor=cmd_rcvd.substring(cmd_rcvd.indexOf(',')+1,cmd_rcvd.lastIndexOf(']')).toInt();
     Duty_us=8300-(83*valor);
 
@@ -45,7 +45,7 @@ if(cmd_rcvd.substring(0,1) == "_")
 		Serial.println(String(disp.Dispositivo[1].direccion));
     		
 		pipe[0]=selectPipe(String(disp.Dispositivo[1].direccion));
-		pipe[1]=selectPipe(String(disp.Dispositivo[1].direccion))+1;
+		pipe[1]=selectPipeL(String(disp.Dispositivo[1].direccion));
 
 		cmdOk=1;
 		reconfig=1;
