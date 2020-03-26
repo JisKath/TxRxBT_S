@@ -5,10 +5,12 @@
 #include <SpecialFunctions.h>
 #include <BT_Net.h>
 #include <EEPROM.h>
-#include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
+//#include <SPI.h>
+//#include <nRF24L01.h>
+//#include <RF24.h>
 //#include <RF24_config.h>
+#include <SoftwareSerial.h>
+#include <HC11RF.h>
 
 String theMessage = "", cmd_rcvd = "";
 int msg[1], cmd_disp = 0, valor = 1, reconfig = 0, TXattempts = 0;
@@ -17,8 +19,11 @@ unsigned long t0, t1, t, Duty_us = 5000;
 
 bool ok = false, done = false;
 
-RF24 radio(9, 10);
-uint64_t pipe[2] = {0x63661E616CLL, 0x63616E616DLL };
+//RF24 radio(9, 10);
+SoftwareSerial RF(10,11); 							// HC-11 TX Pin, HC-11 RX Pin
+HC11RF HC11(RF,38400);								// HC-11 TX Pin, HC-11 RX Pin
+
+String pipe[2];
 
 SpecialFn blinkOn, blinkOff;
 BT_Network disp;
@@ -39,13 +44,13 @@ void setup(void)
 
   digitalWrite(5, HIGH);
 
-  delay(2000);
-  Serial.begin(19200);
+  delay(20);
+  Serial.begin(38400);
   Serial.println("Inicializando Comm");
 
   disp.reeprom();
 
-  disp.wd(0, "dflt7");
+  disp.wd(0, "02@15");
   disp.wn(0, "noname");
 
   if((disp.Dispositivo[1].direccion[0]>47) && (disp.Dispositivo[1].direccion[0]<123)){
@@ -55,7 +60,7 @@ void setup(void)
     }
   else{
     Serial.println("Direccion NOK, se carga dir: dflt0");
-    disp.wd(1,"dflt0");
+    disp.wd(1,"02@15");
     }
 
     //disp.wd(1,"dflt7");
@@ -69,7 +74,7 @@ void setup(void)
   Serial.println(String(disp.Dispositivo[0].direccion));
   Serial.println(String(disp.Dispositivo[1].direccion));
 
-  radio.begin();
+  /*radio.begin();
   radio.setDataRate(RF24_250KBPS);
   radio.setRetries(15, 15);
   radio.setChannel(30);
@@ -77,10 +82,38 @@ void setup(void)
   radio.setPayloadSize(16);
   radio.startListening();
   radio.openReadingPipe(1, pipe[0]);
-  radio.openWritingPipe(pipe[1]);
+  radio.openWritingPipe(pipe[1]);*/
+
+	HC11.cmdPin(9);								//int HC11cmdMode = 53
+	HC11.ATmode(true);
+
+	Serial.println("Configurando modulo HC11");
+
+	Serial.println(HC11.Baudios("38400"));
+	Serial.println(RF.readString());
+
+	Serial.println(HC11.Addr("002"));
+	Serial.println(RF.readString());
+
+	Serial.println(HC11.Canal("015"));
+	Serial.println(RF.readString());
+
+	Serial.println(HC11.Potencia("8"));
+	Serial.println(RF.readString());
+
+	Serial.println(HC11.Info());
+	Serial.println(RF.readString());
+
+	Serial.println(HC11.Version());
+	Serial.println(RF.readString());
+
+	Serial.println(HC11.Function("3"));
+	Serial.println(RF.readString());
+
+	HC11.ATmode(false);
 
   blinkOn.TON.pre = 5;							//Inicilizando Timers
-  blinkOff.TON.pre = 100;
+  blinkOff.TON.pre = 25;
   blinkOn.TON.en = 0;
   blinkOff.TON.en = 0;
 
@@ -92,6 +125,7 @@ void loop(void)
   blinkOff.init();
   blinkOn.init();
   blinkOn.TON.en = 1;
+  blinkOff.TON.en = 1;
 
   if (blinkOn.TON.tt)
   {};
@@ -112,7 +146,7 @@ void loop(void)
       Serial.print("Dato Enviado: ");
       Serial.println(cmd_rcvd);
       cmd_rcvd = "";
-      radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
+      //radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
       blinkOn.TON.en = 0;
       done = false;
     }
@@ -121,7 +155,7 @@ void loop(void)
       Serial.println("Falla al transmitir;");
       blinkOn.TON.en = 0;
       done = false;
-      radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
+      //radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
 
     }
 
@@ -131,7 +165,7 @@ void loop(void)
 
   }
 
-  if ( radio.available() && !done )  // Si hay datos disponibles.
+  if ( RF.available() && !done && blinkOff.TON.dn )  // Si hay datos disponibles.
   {
     cmd_rcvd = "";
 
@@ -141,24 +175,25 @@ void loop(void)
     Serial.print("Datos Recibidos: ");
     Serial.println(cmd_rcvd);
 
-    radio.stopListening();	// Dejamos d escuchar para poder hablar
+    //radio.stopListening();	// Dejamos d escuchar para poder hablar
 
-    delay(100);	// Para dar tiempo al emisor
+    //delay(100);	// Para dar tiempo al emisor
 
     RadioCmds();
 
     ok = false;
     TXattempts = 0;
     done = true;
+	blinkOff.TON.en = 0;
 
   }
 
   if (reconfig == 1)
   {
-    radio.openReadingPipe(1, pipe[0]);
-    radio.openWritingPipe(pipe[1]);
-    radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
-    reconfig = 0;
+    //radio.openReadingPipe(1, pipe[0]);
+    //radio.openWritingPipe(pipe[1]);
+    //radio.startListening();    // Volvemos a la escucha para recibir mas paquetes
+    //reconfig = 0;
 
   }
 

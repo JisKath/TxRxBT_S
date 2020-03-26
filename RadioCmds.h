@@ -44,8 +44,13 @@ if(cmd_rcvd.substring(0,1) == "_")
 		Serial.println(String(disp.Dispositivo[0].direccion));
 		Serial.println(String(disp.Dispositivo[1].direccion));
     		
-		pipe[0]=selectPipe(String(disp.Dispositivo[1].direccion));
-		pipe[1]=selectPipeL(String(disp.Dispositivo[1].direccion));
+		//pipe[0]=selectPipe(String(disp.Dispositivo[1].direccion));
+		//pipe[1]=selectPipeL(String(disp.Dispositivo[1].direccion));
+		
+		HC11.ATmode(true);
+		HC11.Addr(selectPipe(disp.Dispositivo[1].direccion));
+		HC11.Canal(selectPipeL(disp.Dispositivo[1].direccion));
+		HC11.ATmode(false);
 
 		cmdOk=1;
 		reconfig=1;

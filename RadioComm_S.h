@@ -1,52 +1,42 @@
 
-uint64_t selectPipe(String _pipe)
+String selectPipe(String _pipe)
 {
-  uint64_t ix= _pipe[4] + _pipe[3]*0x100 + _pipe[2]*0x10000 + _pipe[1]*0x1000000 + _pipe[0]*0x100000000;
+  //uint64_t ix= _pipe[4] + _pipe[3]*0x100 + _pipe[2]*0x10000 + _pipe[1]*0x1000000 + _pipe[0]*0x100000000;
+  String ix="0";
+  ix=ix + _pipe.substring(0,2);
   return(ix); 
 }
 
-uint64_t selectPipeL(String _pipe)
+String selectPipeL(String _pipe)
 {
 
-  uint64_t ix= _pipe[0] + _pipe[1]*0x100 + _pipe[2]*0x10000 + _pipe[3]*0x1000000 + _pipe[4]*0x100000000;
-
+  //uint64_t ix= _pipe[0] + _pipe[1]*0x100 + _pipe[2]*0x10000 + _pipe[3]*0x1000000 + _pipe[4]*0x100000000;
+  String ix="0";
+  ix=ix + _pipe.substring(3,5);
   return(ix);
 
 }
 
 String RadioRead(void)
 {
-	
-  String Mensaje="";
-  bool a=false;
+  String Mensaje;
+  Mensaje.reserve(16);
+  Mensaje.remove(0, 15);
   
-  char MSG[16];
-  radio.read( MSG,sizeof(MSG));
-
-  for (int i = 0; i < sizeof(MSG); i++) 
-    Mensaje.concat(MSG[i]);
+  while(RF.available())
+	Mensaje=RF.readString();
 
   return (Mensaje);
 }
 
-
 bool RadioWrite(String theMessage)
 {
   bool a=false;
-      char charToSend[16]= {' ', ' ', ' ' ,' ' ,' ', ' ',' ', ' ' ,' ', ' ', ' ' ,' ', ' ', ' ' ,' ',' ' };
       
-      
-  theMessage.concat(';');
+  //theMessage.concat(';');
+  HC11.sends(theMessage);
   
-  int messageSize = theMessage.length();
-  if(messageSize>=16)
-    messageSize=15;
+  a=true;
   
-  for (int i = 0; i < messageSize; i++) 
-  {
-    charToSend[i] = theMessage.charAt(i);
-  }
-
-  a=radio.write(charToSend,messageSize);  
   return (a);
 }
