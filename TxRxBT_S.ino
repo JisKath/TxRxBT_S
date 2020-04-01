@@ -20,7 +20,7 @@ unsigned long t0, t1, t, Duty_us = 5000;
 bool ok = false, done = false;
 
 //RF24 radio(9, 10);
-SoftwareSerial RF(10,11); 							// HC-11 TX Pin, HC-11 RX Pin
+SoftwareSerial RF(9,8); 							// HC-11 TX Pin, HC-11 RX Pin cambiar(9,8)
 HC11RF HC11(RF,38400);								// HC-11 TX Pin, HC-11 RX Pin
 
 String pipe[2];
@@ -50,7 +50,7 @@ void setup(void)
 
   disp.reeprom();
 
-  disp.wd(0, "02@15");
+  disp.wd(0, "02@05");
   disp.wn(0, "noname");
 
   if((disp.Dispositivo[1].direccion[0]>47) && (disp.Dispositivo[1].direccion[0]<123)){
@@ -84,7 +84,7 @@ void setup(void)
   radio.openReadingPipe(1, pipe[0]);
   radio.openWritingPipe(pipe[1]);*/
 
-	HC11.cmdPin(9);								//int HC11cmdMode = 53
+	HC11.cmdPin(10);								//int HC11cmdMode = 53, cmdPin(10);	
 	HC11.ATmode(true);
 
 	Serial.println("Configurando modulo HC11");
@@ -92,10 +92,10 @@ void setup(void)
 	Serial.println(HC11.Baudios("38400"));
 	Serial.println(RF.readString());
 
-	Serial.println(HC11.Addr("002"));
+	Serial.println(HC11.Addr(selectPipe(disp.Dispositivo[1].direccion)));
 	Serial.println(RF.readString());
 
-	Serial.println(HC11.Canal("015"));
+	Serial.println(HC11.Canal(selectPipeL(disp.Dispositivo[1].direccion)));
 	Serial.println(RF.readString());
 
 	Serial.println(HC11.Potencia("8"));
@@ -116,6 +116,8 @@ void setup(void)
   blinkOff.TON.pre = 25;
   blinkOn.TON.en = 0;
   blinkOff.TON.en = 0;
+
+  RF.setTimeout(20);
 
   attachInterrupt(digitalPinToInterrupt(3), Dimmer, RISING);
 }

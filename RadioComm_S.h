@@ -23,9 +23,11 @@ String RadioRead(void)
   Mensaje.reserve(16);
   Mensaje.remove(0, 15);
   
-  while(RF.available())
-	Mensaje=RF.readString();
-
+  while(RF.available()){
+	  //Mensaje=RF.readStringUntil(';');
+    Mensaje=RF.readString();
+    RF.flush();
+  }
   return (Mensaje);
 }
 
