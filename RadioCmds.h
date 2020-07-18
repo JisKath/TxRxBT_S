@@ -11,8 +11,8 @@ if(cmd_rcvd.substring(0,1) == "_")
 		valor=cmd_rcvd.substring(cmd_rcvd.indexOf(',')+1,cmd_rcvd.lastIndexOf(']')).toInt();
 		Duty_us=8300-(83*valor);
 
-		Serial.println(valor);
-		Serial.println(Duty_us);
+		//Serial.println(valor);
+		//Serial.println(Duty_us);
 		cmdOk=1;
 	}
 	
@@ -48,10 +48,39 @@ if(cmd_rcvd.substring(0,1) == "_")
 
 	}
 	
+	if(cmd_rcvd.substring(0,6) == "_clrd[")
+	{
+		Serial.println("Borrando EEPROM");
+		disp.clreeprom();
+		disp.reeprom();
+		Serial.println("EEPROM ---> SRAM enviado;");
+		cmdOk=1;
+	}
+	
 	if (cmdOk==0)
 		Serial.println("Comando no identificado");
 	
 	
 }
 
+}
+
+void localCmds(void)
+{
+  int cmdOk=0;
+	String temp="";
+	temp=Serial.readString();
+ 
+	if(temp.substring(0,6) == "_clrd[")
+	{
+		Serial.println("Borrando EEPROM");
+		disp.clreeprom();
+		disp.reeprom();
+		Serial.println("EEPROM ---> SRAM enviado;");
+		cmdOk=1;
+	}
+	
+	if (cmdOk==0)
+		Serial.println("Comando no identificado");
+	
 }

@@ -44,15 +44,15 @@ void setup(void)
 
 	disp.wd(0, "02@05");
 	disp.wn(0, "noname");
-
+	
 	if((disp.Dispositivo[1].direccion[0]>47) && (disp.Dispositivo[1].direccion[0]<123)){
 		Serial.print("Direccion ");
 		Serial.print(String(disp.Dispositivo[1].direccion));
 		Serial.println(" Ok ");
 	}
 	else{
-		Serial.println("Direccion NOK, se carga dir: dflt0");
-		disp.wd(1,"02@15");
+		Serial.println("Direccion NOK, se carga dir: 02@05");
+		disp.wd(1,"02@05");
 	}
 
 	pipe[0] = selectPipe(String(disp.Dispositivo[1].direccion));
@@ -152,6 +152,11 @@ void loop(void)
 		TXattempts = 0;
 		done = true;
 		blinkOff.TON.en = 0;
+	}
+	
+	if(Serial.available()>3)
+	{
+	localCmds();	
 	}
 
 	if (reconfig == 1)
